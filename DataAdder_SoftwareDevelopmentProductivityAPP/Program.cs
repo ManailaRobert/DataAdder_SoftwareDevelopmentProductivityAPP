@@ -306,7 +306,7 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
         }
 
 
-        private static Sarcini newSarcina(int NrSarcina,int IdFunctionalitate, int MarcaAngajat, DateTime DataCreare, string GradDificultate, string GradUrgenta)
+        private static Sarcini newSarcina(int NrSarcina, int IdFunctionalitate, int MarcaAngajat, DateTime DataCreare, string GradDificultate, string GradUrgenta)
         {
             var faker = new Faker("ro");
 
@@ -382,17 +382,24 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
 
             // Se randomizeaza un nr intre acel min si max
             int zileAdaugate_dataDeFinalizat = faker.Random.Number(minZileLucrate, maxZileLucrate);
-            
+
             //Se adauga nr random la data de creare.
             DateTime DataDeFinalizat = DataCreare.AddDays(zileAdaugate_dataDeFinalizat);
             int dataDeFinalizat = DateActions.ConvertToIntFormat(DataDeFinalizat);
 
-            // Se randomizeaza un nr de zile ce se va scade sau adauga din data de finalizat 
-            int zile_dataFinalizare = faker.Random.Number(-3, 3);
+            int dataFinalizare = 0;
+            while (dataCreare > dataFinalizare)
+            {
+                // Se randomizeaza un nr de zile ce se va scade sau adauga din data de finalizat 
+                int zile_dataFinalizare = faker.Random.Number(-3, 3);
 
-            //Se adauga / scad zilele randomizate
-            DateTime DataFinalizare = DataDeFinalizat.AddDays(-zile_dataFinalizare);
-            int dataFinalizare = DateActions.ConvertToIntFormat(DataFinalizare);
+                //Se adauga / scad zilele randomizate
+                DateTime DataFinalizare = DataDeFinalizat.AddDays(-zile_dataFinalizare);
+                dataFinalizare = DateActions.ConvertToIntFormat(DataFinalizare);
+            }
+
+            if (dataCreare > dataFinalizare )
+                throw new Exception("Data Creare > Data Finalizare");
 
             Sarcini sarcina = new Sarcini()
             {
