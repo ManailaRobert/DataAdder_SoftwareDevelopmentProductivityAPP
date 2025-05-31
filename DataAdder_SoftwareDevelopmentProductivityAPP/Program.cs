@@ -48,29 +48,29 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             _mapper = mapperConfig.CreateMapper();
 
 
-            Dictionary<string,Dictionary<string, int>> nrSarciniPerAngajatPerPost = new Dictionary<string, Dictionary<string, int>>
-            {
-                ["Design"] = new Dictionary<string, int>
-                {
-                    ["min"] = 1,
-                    ["max"] = 2, 
-                },
-                ["Dev"] = new Dictionary<string, int>
-                {
-                    ["min"] = 2,
-                    ["max"] = 3,
-                },
-                ["Tester"] = new Dictionary<string, int>
-                {
-                    ["min"] = 2,
-                    ["max"] = 3,
-                },
-            };
+            //Dictionary<string,Dictionary<string, int>> nrSarciniPerAngajatPerPost = new Dictionary<string, Dictionary<string, int>>
+            //{
+            //    ["Design"] = new Dictionary<string, int>
+            //    {
+            //        ["min"] = 1,
+            //        ["max"] = 2, 
+            //    },
+            //    ["Dev"] = new Dictionary<string, int>
+            //    {
+            //        ["min"] = 2,
+            //        ["max"] = 3,
+            //    },
+            //    ["Tester"] = new Dictionary<string, int>
+            //    {
+            //        ["min"] = 2,
+            //        ["max"] = 3,
+            //    },
+            //};
 
 
-            Start2(20220101,
-                20221220,
-                20221228,
+            Start2(20240101,
+                20241220,
+                20241228,
                 12,
                 19,
                 3,
