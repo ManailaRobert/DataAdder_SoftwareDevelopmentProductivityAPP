@@ -72,7 +72,10 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
                 20221220,
                 20221228,
                 2,
-                0,
+                1,
+                2,
+                3,
+                2,
                 3,
                 2
                 );
@@ -434,6 +437,9 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
         //NeOptimizat
         private static async Task Start2(int dataIncepere_Proiect, int dataFinalizare_Proiect, int dataDeTerminat_Proiect,
             int Functionalitati_PerProiect = 3,
+            int nrFirmeNoi = 1,
+            int Proiecte_PerFirma = 1,
+            int nrManageriNoi = 0,
             int nrEchipeNoi = 0,
             int Dezvoltatori_PerEchipa = 3,
             int Designeri_PerEchipa = 2,
@@ -441,8 +447,25 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
         {
             var faker = new Faker("ro");
 
-            int nrFirmeNoi = 1;
-            int Proiecte_PerFirma = 1;
+            int nrProiect = _context.Proiecte.Count() + 1;
+
+            for(int i = 1; i<= nrManageriNoi;i++)
+            {
+                Console.WriteLine("Creating new Managers");
+                Angajati angajatNou = newAngajat("Manager");
+                await _context.Angajati.AddAsync(angajatNou);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"Created manager {i + 1}");
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Eroare la salvare angajat nou Dev \n{ex.Message}");
+                    Environment.Exit(0);
+                }    
+            }
 
             for (int f = 1; f <= nrFirmeNoi; f++)
             {
@@ -458,12 +481,12 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
                     Console.WriteLine($"Eroare la salvare firmei \n{ex.Message}");
                     Environment.Exit(0);
                 }
-
+                List<Proiecte> listaProiecteNoi = new List<Proiecte>();
+                
                 for (int p = 1; p <= Proiecte_PerFirma; p++)
                 {
 
                     //creare Proiecte
-                    int nrProiect = _context.Proiecte.Count() + 1;
                     DateTime dataIncepereProiect = DateActions.ConvertToDateTime(dataIncepere_Proiect);
                     DateTime dataFinalizareProiect = DateActions.ConvertToDateTime(dataFinalizare_Proiect);
                     DateTime dataDeFinalizatProiect = DateActions.ConvertToDateTime(dataDeTerminat_Proiect);
@@ -479,6 +502,17 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
                         Console.WriteLine($"Eroare la salvarea proiectului \n{ex.Message}");
                         Environment.Exit(0);
                     }
+
+                    listaProiecteNoi.Add(proiectNou);
+                }
+
+
+                foreach (Proiecte proiectNou in listaProiecteNoi)
+                {
+                    DateTime dataIncepereProiect = DateActions.ConvertToDateTime(dataIncepere_Proiect);
+                    DateTime dataFinalizareProiect = DateActions.ConvertToDateTime(dataFinalizare_Proiect);
+                    DateTime dataDeFinalizatProiect = DateActions.ConvertToDateTime(dataDeTerminat_Proiect);
+
                     int idProiect = proiectNou.NrProiect;
 
                     // Angajati inactivi
