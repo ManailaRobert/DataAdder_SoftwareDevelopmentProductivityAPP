@@ -68,13 +68,12 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //};
 
 
-            Start2(20240101,
-                20241220,
-                20241228,
-                12,
-                19,
-                3,
+            Start2(20220101,
+                20221220,
+                20221228,
                 2,
+                0,
+                3,
                 2
                 );
             Console.WriteLine("Finished");
@@ -98,9 +97,8 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             return sb.ToString().Normalize(NormalizationForm.FormC);
         }
         private static async Task Start(int dataIncepere_Proiect, int dataFinalizare_Proiect, int dataDeTerminat_Proiect,
-            int Functionalitati_PerProiect = 3, 
-            int Sarcini_PerAngajat_Min = 12,
-            int Sarcini_PerAngajat_Max = 19,
+            int Functionalitati_PerProiect = 3,
+            int nrEchipeNoi = 0,
             int Dezvoltatori_PerEchipa = 3,
             int Designeri_PerEchipa = 2,
             int Testeri_PerEchipa = 2)
@@ -214,7 +212,6 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
                     }
                     while (arhitecti.Count < 1)
                     {
-                        Console.WriteLine("Infinit Arhitecti");
                         Angajati angajatNou = newAngajat("Arhitect");
 
                         await _context.Angajati.AddAsync(angajatNou);
@@ -437,8 +434,7 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
         //NeOptimizat
         private static async Task Start2(int dataIncepere_Proiect, int dataFinalizare_Proiect, int dataDeTerminat_Proiect,
             int Functionalitati_PerProiect = 3,
-            int Sarcini_PerAngajat_Min = 12,
-            int Sarcini_PerAngajat_Max = 19,
+            int nrEchipeNoi = 0,
             int Dezvoltatori_PerEchipa = 3,
             int Designeri_PerEchipa = 2,
             int Testeri_PerEchipa = 2)
@@ -500,92 +496,273 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
                     List<Angajati> designeri = angajati.Where(a => a.IDPost == 2).ToList();
                     List<Angajati> testeri = angajati.Where(a => a.IDPost == 5).ToList();
                     List<Angajati> arhitecti = angajati.Where(a => a.IDPost == 3).ToList();
-
-                    //Creare angajati noi
-                    while (developeri.Count < Dezvoltatori_PerEchipa)
-                    {
-                        Angajati angajatNou = newAngajat("Dev");
-                        await _context.Angajati.AddAsync(angajatNou);
-                        try
-                        {
-                            await _context.SaveChangesAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Eroare la salvare angajat nou Dev \n{ex.Message}");
-                            Environment.Exit(0);
-                        }
-                        developeri.Add(angajatNou);
-                    }
-                    while (designeri.Count < Designeri_PerEchipa)
-                    {
-                        Angajati angajatNou = newAngajat("Designer");
-                        await _context.Angajati.AddAsync(angajatNou);
-                        try
-                        {
-                            await _context.SaveChangesAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Eroare la salvare angajat nou Designer \n{ex.Message}");
-                            Environment.Exit(0);
-                        }
-                        designeri.Add(angajatNou);
-
-                    }
-                    while (testeri.Count < Testeri_PerEchipa)
-                    {
-                        Angajati angajatNou = newAngajat("Tester");
-                        await _context.Angajati.AddAsync(angajatNou);
-                        try
-                        {
-                            await _context.SaveChangesAsync();
-
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Eroare la salvare angajat nou Tester \n{ex.Message}");
-                            Environment.Exit(0);
-                        }
-                        testeri.Add(angajatNou);
-
-                    }
-                    while (arhitecti.Count < 1)
-                    {
-                        Console.WriteLine("Infinit Arhitecti");
-                        Angajati angajatNou = newAngajat("Arhitect");
-
-                        await _context.Angajati.AddAsync(angajatNou);
-                        try
-                        {
-                            await _context.SaveChangesAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Eroare la salvare angajat nou Arhitect \n{ex.Message}");
-                            Environment.Exit(0);
-                        }
-                        arhitecti.Add(angajatNou);
-                    }
-                    
-                    // Adaugare angajati in echipa
                     List<Angajati> membriDezvoltare = new List<Angajati>();
-                    for (int i = 0; i < Dezvoltatori_PerEchipa; i++)
-                    {
-                        membriDezvoltare.Add(developeri[i]);
-                    }
-                    for (int i = 0; i < Designeri_PerEchipa; i++)
-                    {
-                        membriDezvoltare.Add(designeri[i]);
-                    }
-                    for (int i = 0; i < Testeri_PerEchipa; i++)
-                    {
-                        membriDezvoltare.Add(testeri[i]);
-                    }
+                    int devAdded = 0;
+                    int designerAdded = 0;
+                    int testerAdded = 0;
+                    int arhitectAdded = 0;
 
+                    int nrMembriEchipa = (Dezvoltatori_PerEchipa + Designeri_PerEchipa + Testeri_PerEchipa + 1);
+
+                    do
+                    {
+                        Console.WriteLine("LOOP");
+                        //Creare angajati in caz ca nu sunt destui liberi
+                        if (nrEchipeNoi == 0)
+                        {
+                            
+                            //Creare angajati noi
+                            while (developeri.Count < Dezvoltatori_PerEchipa)
+                            {
+                                Angajati angajatNou = newAngajat("Dev");
+                                await _context.Angajati.AddAsync(angajatNou);
+                                try
+                                {
+                                    await _context.SaveChangesAsync();
+                                    developeri.Add(angajatNou);
+                                    Console.WriteLine($"Created new employee dev");
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Eroare la salvare angajat nou Dev \n{ex.Message}");
+                                    Environment.Exit(0);
+                                }
+                            }
+                            while (designeri.Count < Designeri_PerEchipa)
+                            {
+                                Angajati angajatNou = newAngajat("Designer");
+                                await _context.Angajati.AddAsync(angajatNou);
+                                try
+                                {
+                                    await _context.SaveChangesAsync();
+                                    designeri.Add(angajatNou);
+                                    Console.WriteLine($"Created new employee Designer");
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Eroare la salvare angajat nou Designer \n{ex.Message}");
+                                    Environment.Exit(0);
+                                }
+
+                            }
+                            while (testeri.Count < Testeri_PerEchipa)
+                            {
+                                Angajati angajatNou = newAngajat("Tester");
+                                await _context.Angajati.AddAsync(angajatNou);
+                                try
+                                {
+                                    await _context.SaveChangesAsync();
+                                    testeri.Add(angajatNou);
+                                    Console.WriteLine($"Created new employee Tester");
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Eroare la salvare angajat nou Tester \n{ex.Message}");
+                                    Environment.Exit(0);
+                                }
+
+                            }
+                            while (arhitecti.Count < 1)
+                            {
+                                Angajati angajatNou = newAngajat("Arhitect");
+
+                                await _context.Angajati.AddAsync(angajatNou);
+                                try
+                                {
+                                    await _context.SaveChangesAsync();
+                                    Console.WriteLine($"Created new employee Arhitect");
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Eroare la salvare angajat nou Arhitect \n{ex.Message}");
+                                    Environment.Exit(0);
+                                }
+                                arhitecti.Add(angajatNou);
+                            }
+                        }
+                        else
+                        {
+                            developeri = new List<Angajati>();
+                            designeri = new List<Angajati>();
+                            testeri = new List<Angajati>();
+                            arhitecti = new List<Angajati>();
+
+                            Console.WriteLine("Creating new teams");
+                            for (int i = 0; i < nrEchipeNoi; i++)
+                            {
+                                Console.WriteLine($"Creating team {i+1}");
+                                for (int j = 0; j < Dezvoltatori_PerEchipa; j++)
+                                {
+                                    Angajati angajatNou = newAngajat("Dev");
+                                    await _context.Angajati.AddAsync(angajatNou);
+                                    try
+                                    {
+                                        await _context.SaveChangesAsync();
+                                        developeri.Add(angajatNou);
+                                        Console.WriteLine($"Created dev {j + 1}");
+
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"Eroare la salvare angajat nou Dev \n{ex.Message}");
+                                        Environment.Exit(0);
+                                    }
+                                }
+
+                                for (int j = 0; j < Designeri_PerEchipa; j++)
+                                {
+                                    Angajati angajatNou = newAngajat("Designer");
+                                    await _context.Angajati.AddAsync(angajatNou);
+                                    try
+                                    {
+                                        await _context.SaveChangesAsync();
+                                        designeri.Add(angajatNou);
+                                        Console.WriteLine($"Created designer {j + 1}");
+
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"Eroare la salvare angajat nou Designer \n{ex.Message}");
+                                        Environment.Exit(0);
+                                    }
+
+                                }
+                                for (int j = 0; j < Testeri_PerEchipa; j++)
+                                {
+                                    Angajati angajatNou = newAngajat("Tester");
+                                    await _context.Angajati.AddAsync(angajatNou);
+                                    try
+                                    {
+                                        await _context.SaveChangesAsync();
+                                        testeri.Add(angajatNou);
+                                        Console.WriteLine($"Created tester {j + 1}");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"Eroare la salvare angajat nou Tester \n{ex.Message}");
+                                        Environment.Exit(0);
+                                    }
+
+                                }
+                                for (int j = 0; j < 1; j++)
+                                {
+                                    Angajati angajatNou = newAngajat("Arhitect");
+
+                                    await _context.Angajati.AddAsync(angajatNou);
+                                    try
+                                    {
+                                        await _context.SaveChangesAsync();
+                                        arhitecti.Add(angajatNou);
+                                        Console.WriteLine($"Created arhitect {j + 1}");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"Eroare la salvare angajat nou Arhitect \n{ex.Message}");
+                                        Environment.Exit(0);
+                                    }
+
+                                }
+                            }
+                        }
+
+                        //Creare echipe noi
+                        nrEchipeNoi = 0;
+                        // Adaugare angajati in echipa
+                        if(devAdded < Dezvoltatori_PerEchipa)
+                            for (int i = 0; i < Dezvoltatori_PerEchipa; i++)
+                            {
+                                Angajati angDeAdaugat = faker.PickRandom(developeri);
+                                developeri.Remove(angDeAdaugat);
+
+                                Angajati temp = membriDezvoltare.FirstOrDefault(a => a.MarcaAngajat == angDeAdaugat.MarcaAngajat);                                                 
+                                if (temp == null)
+                                {
+                                    MembriDezvoltare md_DB = await _context.MembriDezvoltare.FirstOrDefaultAsync(md => angDeAdaugat.MarcaAngajat == md.MarcaAngajat &&
+                                    ((md.DataIntrare >= proiectNou.DataIncepere && md.DataIesire <= proiectNou.DataFinalizare) ||
+                                    (md.DataIntrare <= proiectNou.DataIncepere && md.DataIesire>= proiectNou.DataIncepere && md.DataIesire <= proiectNou.DataFinalizare) ||
+                                    (md.DataIntrare >= proiectNou.DataIncepere && md.DataIntrare <= proiectNou.DataFinalizare && md.DataIesire >= proiectNou.DataFinalizare))
+                                    );
+                                    if(md_DB == null)
+                                    {
+                                        membriDezvoltare.Add(angDeAdaugat);
+                                        devAdded++;
+                                    }
+                                }
+                            }
+
+
+                        if (designerAdded < Designeri_PerEchipa)
+                            for (int i = 0; i < Designeri_PerEchipa; i++)
+                            {
+                                Angajati angDeAdaugat = faker.PickRandom(designeri);
+                                designeri.Remove(angDeAdaugat);
+
+                                Angajati temp = membriDezvoltare.FirstOrDefault(a => a.MarcaAngajat == angDeAdaugat.MarcaAngajat);
+                                if (temp == null)
+                                {
+                                    MembriDezvoltare md_DB = await _context.MembriDezvoltare.FirstOrDefaultAsync(md => angDeAdaugat.MarcaAngajat == md.MarcaAngajat &&
+                                    ((md.DataIntrare >= proiectNou.DataIncepere && md.DataIesire <= proiectNou.DataFinalizare) ||
+                                    (md.DataIntrare <= proiectNou.DataIncepere && md.DataIesire >= proiectNou.DataIncepere && md.DataIesire <= proiectNou.DataFinalizare) ||
+                                    (md.DataIntrare >= proiectNou.DataIncepere && md.DataIntrare <= proiectNou.DataFinalizare && md.DataIesire >= proiectNou.DataFinalizare))
+                                    );
+                                    if (md_DB == null)
+                                    {
+                                        membriDezvoltare.Add(angDeAdaugat);
+                                        designerAdded++;
+                                    }
+                                }
+                            }
+                        if (testerAdded < Testeri_PerEchipa)
+                            for (int i = 0; i < Testeri_PerEchipa; i++)
+                            {
+                                Angajati angDeAdaugat = faker.PickRandom(testeri);
+                                testeri.Remove(angDeAdaugat);
+
+                                Angajati temp = membriDezvoltare.FirstOrDefault(a => a.MarcaAngajat == angDeAdaugat.MarcaAngajat);
+                                if (temp == null)
+                                {
+                                    MembriDezvoltare md_DB = await _context.MembriDezvoltare.FirstOrDefaultAsync(md => angDeAdaugat.MarcaAngajat == md.MarcaAngajat &&
+                                    ((md.DataIntrare >= proiectNou.DataIncepere && md.DataIesire <= proiectNou.DataFinalizare) ||
+                                    (md.DataIntrare <= proiectNou.DataIncepere && md.DataIesire >= proiectNou.DataIncepere && md.DataIesire <= proiectNou.DataFinalizare) ||
+                                    (md.DataIntrare >= proiectNou.DataIncepere && md.DataIntrare <= proiectNou.DataFinalizare && md.DataIesire >= proiectNou.DataFinalizare))
+                                    );
+                                    if (md_DB == null)
+                                    {
+                                        membriDezvoltare.Add(angDeAdaugat);
+                                        testerAdded++;
+                                    }
+                                }
+                            }
+
+                        if (arhitectAdded < 1)
+                            for (int i = 0; i < 1; i++)
+                            {
+                                Angajati angDeAdaugat = faker.PickRandom(arhitecti);
+                                arhitecti.Remove(angDeAdaugat);
+
+                                Angajati temp = membriDezvoltare.FirstOrDefault(a => a.MarcaAngajat == angDeAdaugat.MarcaAngajat);
+                                if (temp == null)
+                                {
+                                    MembriDezvoltare md_DB = await _context.MembriDezvoltare.FirstOrDefaultAsync(md => angDeAdaugat.MarcaAngajat == md.MarcaAngajat &&
+                                    ((md.DataIntrare >= proiectNou.DataIncepere && md.DataIesire <= proiectNou.DataFinalizare) ||
+                                    (md.DataIntrare <= proiectNou.DataIncepere && md.DataIesire >= proiectNou.DataIncepere && md.DataIesire <= proiectNou.DataFinalizare) ||
+                                    (md.DataIntrare >= proiectNou.DataIncepere && md.DataIntrare <= proiectNou.DataFinalizare && md.DataIesire >= proiectNou.DataFinalizare))
+                                    );
+                                    if (md_DB == null)
+                                    {
+                                        membriDezvoltare.Add(angDeAdaugat);
+                                        arhitectAdded++;
+                                    }
+                                }
+                            }
+                    } while (membriDezvoltare.Count < nrMembriEchipa);
+
+                    membriDezvoltare.Add(faker.PickRandom(manageri));
                     await adaugaMembriInEchipa(proiectNou, membriDezvoltare);
-                    await adaugaMembriInEchipa(proiectNou, new List<Angajati>()
-                    { faker.PickRandom(manageri), faker.PickRandom(arhitecti) });
 
 
                     //creare functionalitatilor
@@ -753,7 +930,7 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             string stradaSiNumar = $"Str. {faker.Address.StreetName()}, Nr. {faker.Address.BuildingNumber()}";
             string cnp = faker.Person.Cnp();
 
-            string serieCIBI = "B" + faker.Random.Number(100000, 999999);
+            string serieCIBI = "B" + faker.Random.Number(1, 9);
 
             nume = RemoveDiacritics(nume);
             prenume = RemoveDiacritics(prenume);
