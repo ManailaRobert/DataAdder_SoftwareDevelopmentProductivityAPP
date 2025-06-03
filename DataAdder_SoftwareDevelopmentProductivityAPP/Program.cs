@@ -15,6 +15,7 @@ using SoftwareDevelopmentProductivityAPP.Utils;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
+using System.Runtime.Intrinsics.Arm;
 
 namespace DataAdder_SoftwareDevelopmentProductivityAPP
 {
@@ -68,20 +69,24 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //};
 
 
-            Start2(20220101,
-                20221220,
-                20221228,
-                2,
-                1,
-                2,
-                3,
-                2,
-                3,
-                2
-                );
+            //Start2(20220101,
+            //    20221220,
+            //    20221228,
+            //    2,
+            //    1,
+            //    2,
+            //    3,
+            //    2,
+            //    3,
+            //    2
+            //    );
+            //ModifyAngajati(65);
+            //CreateEmployeeAccounts(65);
+            //ModifyFirme(5);
             Console.WriteLine("Finished");
-            Console.ReadKey();  
-        }
+            Console.ReadKey();
+
+       }
 
         static string RemoveDiacritics(string text)
         {
@@ -930,9 +935,127 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             return ;
         }
 
+        private static async void ModifyAngajati(int nrAngajatiModificati)
+        {
+            List<Angajati> listaAngajati = await _context.Angajati.Where(a => a.MarcaAngajat <= nrAngajatiModificati).ToListAsync();
+
+
+            foreach(Angajati angajat in listaAngajati)
+            {
+                Angajati modificariAngajat = newAngajat(getPostString(angajat.IDPost));
+
+                angajat.NumeSiPrenume = modificariAngajat.NumeSiPrenume;
+                angajat.Email = modificariAngajat.Email;
+                angajat.NumarDeTelefon = modificariAngajat.NumarDeTelefon;
+                angajat.Localitate = modificariAngajat.Localitate;
+                angajat.Strada_si_numar = modificariAngajat.Strada_si_numar;
+                angajat.CNP = modificariAngajat.CNP;
+                angajat.SerieCIBI = modificariAngajat.SerieCIBI;
+
+                _context.Entry(angajat).State = EntityState.Modified;
+
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private static async void ModifyFirme(int nrFirmeModificate)
+        {
+            List<Firme> listaFirme = await _context.Firme.Where(a => a.CODFirma <= nrFirmeModificate).ToListAsync();
+
+
+            foreach (Firme firma in listaFirme)
+            {
+                Firme modificariFirma = newFirma();
+
+                //firma.Denumire = modificariFirma.Denumire;
+                firma.Denumire = $"Firma {firma.CODFirma}";
+                firma.CUI = modificariFirma.CUI;
+                //firma.Email = modificariFirma.Email;
+                firma.NumarDeTelefon = modificariFirma.NumarDeTelefon;
+                //firma.Tara = modificariFirma.Tara;
+                //firma.Localitate = modificariFirma.Localitate;
+                //firma.Strada_si_numar = modificariFirma.Strada_si_numar;
+
+                _context.Entry(firma).State = EntityState.Modified;
+
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+
+        private static async void CreateEmployeeAccounts(int nrAngajatiModificati)
+        {
+            List<Angajati> listaAngajati = await _context.Angajati
+                .Include(a => a.Cont)
+                .Include(a => a.Post)
+                .Where(a => a.MarcaAngajat <= nrAngajatiModificati)
+                .ToListAsync();
+
+
+            foreach (Angajati angajat in listaAngajati)
+            {
+                if(angajat.Cont == null)
+                {
+                    int idRol = 2;
+                    string usernameCont = $"ang{angajat.MarcaAngajat}";
+
+                    if(angajat.Post.IDPost == 1)
+                    {
+                        idRol = 1;
+                        usernameCont = $"m{angajat.MarcaAngajat}";
+                    }
+
+                    if (angajat.Post.IDPost == 3)
+                    {
+                        idRol = 3;
+                        usernameCont = $"arh{angajat.MarcaAngajat}";
+                    }
+
+                    Conturi cont = new Conturi()
+                    {
+                        Username = $"{usernameCont}",
+                        Password = "1234",
+                        IDRol = idRol,
+                        MarcaAngajat = angajat.MarcaAngajat
+                    };
+
+                    await _context.Conturi.AddAsync(cont);
+                }
+                else
+                {
+                    Conturi contAng = angajat.Cont;
+
+                    string usernameCont = $"ang{angajat.MarcaAngajat}";
+
+                    if (angajat.Post.IDPost == 1)
+                    {
+                        usernameCont = $"mg{angajat.MarcaAngajat}";
+                    }
+
+
+                    if (angajat.Post.IDPost == 3)
+                    {
+                        usernameCont = $"arh{angajat.MarcaAngajat}";
+                    }
+
+                    contAng.Username = $"{usernameCont}";
+                    contAng.Password = "1234";
+
+                    _context.Conturi.Entry(contAng).State = EntityState.Modified;
+                }
+
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         private static Angajati newAngajat(string Post)
         {
             var faker = new Faker("ro");
+
+            List<string> listaSeriiBucuresti = new List<string>() { "DP", "DR", "DT", "DX", "RD", "RR", "RT", "RX", "RK", "RZ" };
 
             var providers = new List<string>()
             {
@@ -964,7 +1087,7 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             string stradaSiNumar = $"Str. {faker.Address.StreetName()}, Nr. {faker.Address.BuildingNumber()}";
             string cnp = faker.Person.Cnp();
 
-            string serieCIBI = "B" + faker.Random.Number(1, 9);
+            string serieCIBI = faker.PickRandom(listaSeriiBucuresti);
 
             nume = RemoveDiacritics(nume);
             prenume = RemoveDiacritics(prenume);
@@ -1300,5 +1423,37 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             return listaPerioade;
         }
 
+        private static string getPostString(int postId)
+        {
+            string postString;
+            switch (postId)
+            {
+                case 1:
+                    postString = "Manager";
+                    break;
+
+                case 2:
+                    postString = "Designer";
+                    break;
+
+                case 3:
+                    postString = "Arhitect";
+                    break;
+
+                case 4:
+                    postString = "Dev";
+                    break;
+
+                case 5:
+                    postString = "Tester";
+                    break;
+
+                default:
+                    throw new Exception("Post invalid");
+                    break;
+            }
+            return postString;
+        }
+    
     }
 }
