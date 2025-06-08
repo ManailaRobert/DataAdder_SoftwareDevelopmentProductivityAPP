@@ -6,9 +6,10 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
 {
     public class MappingProfile :Profile
     {
-        public MappingProfile() {
-        
-            CreateMap<Firme,partialFirme>()
+        public MappingProfile()
+        {
+
+            CreateMap<Firme, partialFirme>()
                 .ForMember(dest => dest.Denumire, opt => opt.MapFrom(src => src.Denumire))
                 .ForMember(dest => dest.CODFirma, opt => opt.MapFrom(src => src.CODFirma));
 
@@ -18,7 +19,7 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
 
             CreateMap<Functionalitati, partialFunctionalitati>()
                 .ForMember(dest => dest.IDFunctionalitate, opt => opt.MapFrom(src => src.IDFunctionalitate))
-                .ForMember(dest => dest.Denumire, opt   => opt.MapFrom(src => src.Denumire))
+                .ForMember(dest => dest.Denumire, opt => opt.MapFrom(src => src.Denumire))
                 .ForMember(dest => dest.Descriere, opt => opt.MapFrom(src => src.Descriere))
                 .ForMember(dest => dest.DenumireProiect, opt => opt.MapFrom(src => src.Proiect != null ? src.Proiect.Denumire : null));
 
@@ -47,6 +48,10 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             CreateMap<GradeUrgentaSarcini, partialGradeUrgentaSarcini>()
                 .ForMember(dest => dest.IDGradUrgentaSarcina, opt => opt.MapFrom(src => src.IDGradUrgentaSarcina))
                 .ForMember(dest => dest.Denumire, opt => opt.MapFrom(src => src.Denumire));
+
+            CreateMap<DocumenteInterne, partialDocumenteInterne>()
+                .ForMember(dest => dest.Denumire, opt => opt.MapFrom(src => src.Denumire))
+                .ForMember(dest => dest.NumarDocument, opt => opt.MapFrom(src => src.NumarDocument));
         }
 
     }

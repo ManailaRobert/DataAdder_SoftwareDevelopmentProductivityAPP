@@ -42,7 +42,7 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Proiecte> Proiecte { get; set; }
 
-    public virtual DbSet<Rapoarte> Rapoarte { get; set; }
+    public virtual DbSet<RapoarteExterne> Rapoarte { get; set; }
 
     public virtual DbSet<Roluri> Roluri { get; set; }
 
@@ -154,7 +154,7 @@ public partial class DBContext : DbContext
 
             entity.Property(e => e.IDFunctionalitate).HasColumnName("ID_Functionalitate");
             entity.Property(e => e.Denumire).HasMaxLength(50);
-            entity.Property(e => e.Descriere).HasColumnType("text");
+            entity.Property(e => e.Descriere);
             entity.Property(e => e.NrProiect).HasColumnName("Nr_Proiect");
 
             entity.HasOne(d => d.Proiect).WithMany(p => p.Functionalitati)
@@ -276,11 +276,11 @@ public partial class DBContext : DbContext
             entity.Property(e => e.IDProblema).HasColumnName("ID_Problema");
             entity.Property(e => e.DataIntregistrare).HasColumnName("Data_intregistrare");
             entity.Property(e => e.DataRezolvare).HasColumnName("Data_rezolvare");
-            entity.Property(e => e.Descriere).HasColumnType("text");
+            entity.Property(e => e.Descriere);
             entity.Property(e => e.IDGradUrgentaProblema).HasColumnName("ID_Grad_Urgenta_Problema");
             entity.Property(e => e.IDSarcina).HasColumnName("ID_Sarcina");
             entity.Property(e => e.MarcaAngajat).HasColumnName("Marca_Angajat");
-            entity.Property(e => e.Solutie).HasColumnType("text");
+            entity.Property(e => e.Solutie);
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.Titlu).HasMaxLength(50);
 
@@ -312,7 +312,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.DataFinalizare).HasColumnName("Data_finalizare");
             entity.Property(e => e.DataIncepere).HasColumnName("Data_incepere");
             entity.Property(e => e.Denumire).HasMaxLength(50);
-            entity.Property(e => e.Descriere).HasColumnType("text");
+            entity.Property(e => e.Descriere);
 
             entity.HasOne(d => d.Firma).WithMany(p => p.Proiecte)
                 .HasForeignKey(d => d.CODFirma)
@@ -320,11 +320,11 @@ public partial class DBContext : DbContext
                 .HasConstraintName("FK_Proiecte_Firma");
         });
 
-        modelBuilder.Entity<Rapoarte>(entity =>
+        modelBuilder.Entity<RapoarteExterne>(entity =>
         {
             entity.HasKey(e => e.NumarRaport);
 
-            entity.ToTable("Rapoarte");
+            entity.ToTable("Rapoarte_Externe");
 
             entity.Property(e => e.NumarRaport).HasColumnName("Numar_Raport");
             entity.Property(e => e.AdresaFisier)
@@ -334,7 +334,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.CodFirma).HasColumnName("Cod_Firma");
             entity.Property(e => e.DataCreare).HasColumnName("Data_creare");
             entity.Property(e => e.Denumire).HasMaxLength(150);
-            entity.Property(e => e.Descriere).HasColumnType("text");
+            entity.Property(e => e.Descriere);
             entity.Property(e => e.IdTipRaport).HasColumnName("ID_Tip_Raport");
             entity.Property(e => e.MarcaAngajatAutor).HasColumnName("Marca_Angajat_Autor");
             entity.Property(e => e.NrProiect).HasColumnName("Nr_Proiect");
@@ -349,7 +349,7 @@ public partial class DBContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Rapoarte_Tipuri_rapoarte");
 
-            entity.HasOne(d => d.Angajat).WithMany(p => p.Rapoarte)
+            entity.HasOne(d => d.Angajat).WithMany(p => p.RapoarteExterne)
                 .HasForeignKey(d => d.MarcaAngajatAutor)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Rapoarte_Angajati");
@@ -358,6 +358,35 @@ public partial class DBContext : DbContext
                 .HasForeignKey(d => d.NrProiect)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Rapoarte_Proiecte");
+        });
+
+        modelBuilder.Entity<DocumenteInterne>(entity =>
+        {
+            entity.HasKey(e => e.NumarDocument);
+
+            entity.ToTable("Documente_Interne");
+
+            entity.Property(e => e.NumarDocument).HasColumnName("Numar_Document");
+            entity.Property(e => e.AdresaFisier)
+                .HasMaxLength(300)
+                .IsUnicode(false)
+                .HasColumnName("Adresa_Fisier");
+            entity.Property(e => e.DataCreare).HasColumnName("Data_creare");
+            entity.Property(e => e.Denumire).HasMaxLength(150);
+            entity.Property(e => e.Descriere);
+            entity.Property(e => e.IdTipDocument).HasColumnName("ID_Tip_Document");
+            entity.Property(e => e.MarcaAngajatAutor).HasColumnName("Marca_Angajat_Autor");
+
+
+            entity.HasOne(d => d.TipDocument).WithMany(p => p.DocumenteInterne)
+                .HasForeignKey(d => d.IdTipDocument)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Documente_Interne_Tipuri_Documente_Interne");
+
+            entity.HasOne(d => d.Angajat).WithMany(p => p.DocumenteInterne)
+                .HasForeignKey(d => d.MarcaAngajatAutor)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Documente_Interne_Angajati");
         });
 
         modelBuilder.Entity<Roluri>(entity =>
@@ -384,7 +413,7 @@ public partial class DBContext : DbContext
             entity.Property(e => e.DataDeFinalizat).HasColumnName("Data_de_finalizat");
             entity.Property(e => e.DataFinalizare).HasColumnName("Data_finalizare");
             entity.Property(e => e.Denumire).HasMaxLength(20);
-            entity.Property(e => e.Descriere).HasColumnType("text");
+            entity.Property(e => e.Descriere);
             entity.Property(e => e.IDFunctionalitate).HasColumnName("ID_Functionalitate");
             entity.Property(e => e.IDGradDificultate).HasColumnName("ID_Grad_Dificultate");
             entity.Property(e => e.IDGradUrgentaSarcina).HasColumnName("ID_Grad_Urgenta_Sarcina");
@@ -430,7 +459,19 @@ public partial class DBContext : DbContext
 
             entity.Property(e => e.IDTipRaport).HasColumnName("ID_Tip_Raport");
             entity.Property(e => e.Denumire).HasMaxLength(100);
-            entity.Property(e => e.Descriere).HasColumnType("text");
+            entity.Property(e => e.Descriere);
+        });
+
+        modelBuilder.Entity<TipuriDocumenteInterne>(entity =>
+        {
+            entity.HasKey(e => e.IDTipDocument);
+
+            entity.ToTable("Tipuri_Documente_Interne");
+
+            entity.Property(e => e.IDTipDocument).HasColumnName("ID_Tip_Document");
+            entity.Property(e => e.Denumire).HasMaxLength(100);
+            entity.Property(e => e.Descriere);
+
         });
 
         OnModelCreatingPartial(modelBuilder);

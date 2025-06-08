@@ -75,18 +75,21 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //    2,
             //    1,
             //    2,
-            //    3,
-            //    2,
+            //    0,
+            //    0,
             //    3,
             //    2
             //    );
             //ModifyAngajati(65);
-            //CreateEmployeeAccounts(65);
+            //CreateEmployeeAccounts(109);
             //ModifyFirme(5);
+            //ModifySarcini();
             Console.WriteLine("Finished");
             Console.ReadKey();
 
        }
+
+
 
         static string RemoveDiacritics(string text)
         {
@@ -452,9 +455,9 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
         {
             var faker = new Faker("ro");
 
-            int nrProiect = _context.Proiecte.Count() + 1;
+            int nrProiect = 0;
 
-            for(int i = 1; i<= nrManageriNoi;i++)
+            for (int i = 1; i<= nrManageriNoi;i++)
             {
                 Console.WriteLine("Creating new Managers");
                 Angajati angajatNou = newAngajat("Manager");
@@ -490,6 +493,8 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
                 
                 for (int p = 1; p <= Proiecte_PerFirma; p++)
                 {
+                    nrProiect = _context.Proiecte.Count() + 1;
+
 
                     //creare Proiecte
                     DateTime dataIncepereProiect = DateActions.ConvertToDateTime(dataIncepere_Proiect);
@@ -984,7 +989,21 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             await _context.SaveChangesAsync();
         }
 
+        private static async void ModifySarcini()
+        {
+            List<Sarcini> listaSarcini = await _context.Sarcini
+                .Where(s => s.CalificativDePerformanta != null)
+                .ToListAsync();
 
+
+            foreach(Sarcini sarcina in listaSarcini)
+            {
+                sarcina.CalificativDePerformanta = Math.Round((decimal)sarcina.CalificativDePerformanta, 1, MidpointRounding.AwayFromZero);
+
+                _context.Sarcini.Entry(sarcina).State = EntityState.Modified;              
+            }
+            await _context.SaveChangesAsync();
+        }
         private static async void CreateEmployeeAccounts(int nrAngajatiModificati)
         {
             List<Angajati> listaAngajati = await _context.Angajati
