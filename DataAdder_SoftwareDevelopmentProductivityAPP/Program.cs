@@ -84,6 +84,7 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //CreateEmployeeAccounts(109);
             //ModifyFirme(5);
             //ModifySarcini();
+            //AdaugaProbleme();
             Console.WriteLine("Finished");
             Console.ReadKey();
 
@@ -911,6 +912,69 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
         }
 
 
+        private static async void AdaugaProbleme()
+        {
+            Faker faker = new Faker();  
+            List<int> listaSansa = new List<int>()
+            {
+                1,2,3,4,5,6,7,8,9,10
+
+            };
+
+            List<Proiecte> proiecte = await _context.Proiecte
+                .Where(p => p.DataFinalizare != null)
+                .ToListAsync();
+
+            int nrProblema = await _context.ProblemeDeRezolvare.CountAsync();
+
+            Console.WriteLine(proiecte.Count());
+
+            foreach(Proiecte proiect in proiecte)
+            {
+                List<Functionalitati> functionalitati = await _context.Functionalitati
+                    .Where(f=> f.NrProiect == proiect.NrProiect)
+                    .ToListAsync();
+
+                Angajati arhitect = await _context.MembriDezvoltare
+                    .Include(md => md.Angajat)
+                    .Where(md => md.NrProiect == proiect.NrProiect && md.Angajat.IDPost == 3)
+                    .Select(md => md.Angajat)
+                    .FirstOrDefaultAsync();
+
+                if (arhitect == null)
+                    break;
+
+                foreach(Functionalitati func in functionalitati)
+                {
+                    List<Sarcini> listaSarcini = await _context.Sarcini
+                        .Where(s => s.IDFunctionalitate == func.IDFunctionalitate)  
+                        .ToListAsync();
+                    
+                    foreach(Sarcini sarcina in listaSarcini)
+                    {
+                        if(faker.PickRandom(listaSansa) > 8)
+                        {
+                            nrProblema++;
+                            DateTime dataInregistrare = DateActions.ConvertToDateTime(sarcina.DataCreare);
+                            DateTime dataRezolvare = dataInregistrare.AddDays(1);
+
+                            if (DateActions.ConvertToDateTime((int)sarcina.DataFinalizare) < dataRezolvare)
+                                dataRezolvare.AddDays(-1);
+
+                            ProblemeDeRezolvare problema = newProblema(nrProblema, sarcina.IDSarcina, arhitect.MarcaAngajat, dataInregistrare, dataRezolvare);
+
+
+                            await _context.ProblemeDeRezolvare.AddAsync(problema);
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+            }
+        
+
+        } 
+
         private static async Task adaugaMembriInEchipa(Proiecte proiect, List<Angajati> membri)
         {
 
@@ -1004,6 +1068,36 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             }
             await _context.SaveChangesAsync();
         }
+        
+        private static ProblemeDeRezolvare newProblema(int NrProblema, int idSarcina, int marcaArhitect,DateTime DataInregistrare, DateTime DataRezolvare )
+        {
+            Faker faker = new Faker();
+            List<int> gradeUrg = new List<int>() { 1,2,3};
+
+            string titlu = $"Problema {NrProblema}";
+            string descriere = $"Descriere problema {NrProblema}";
+            string solutie = $"Solutie problema {NrProblema}";
+            int dataInregistrare = DateActions.ConvertToIntFormat(DataInregistrare);
+            int dataRezolvare = DateActions.ConvertToIntFormat(DataRezolvare);
+            string status = "Rezolvata";
+            int idGradUrgenta = faker.PickRandom(gradeUrg);
+
+            ProblemeDeRezolvare problema = new ProblemeDeRezolvare()
+            {
+                Titlu = titlu,
+                Descriere = descriere,
+                Solutie = solutie,
+                DataIntregistrare = dataInregistrare,
+                DataRezolvare = dataRezolvare,
+                Status = status,
+                IDSarcina = idSarcina,
+                MarcaAngajat = marcaArhitect,
+                IDGradUrgentaProblema = idGradUrgenta,
+            };
+
+            return problema;           
+        }
+
         private static async void CreateEmployeeAccounts(int nrAngajatiModificati)
         {
             List<Angajati> listaAngajati = await _context.Angajati
