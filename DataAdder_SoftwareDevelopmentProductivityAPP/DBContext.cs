@@ -16,7 +16,9 @@ public partial class DBContext : DbContext
     {
     }
 
+
     public virtual DbSet<Angajati> Angajati { get; set; }
+
 
     public virtual DbSet<Conturi> Conturi { get; set; }
 
@@ -42,7 +44,9 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Proiecte> Proiecte { get; set; }
 
-    public virtual DbSet<RapoarteExterne> Rapoarte { get; set; }
+    public virtual DbSet<RapoarteExterne> RapoarteExterne { get; set; }
+
+    public virtual DbSet<DocumenteInterne> DocumenteInterne { get; set; }
 
     public virtual DbSet<Roluri> Roluri { get; set; }
 
@@ -51,8 +55,10 @@ public partial class DBContext : DbContext
     public virtual DbSet<Subtask> Subtasks { get; set; }
 
     public virtual DbSet<TipuriRapoarte> TipuriRapoarte { get; set; }
+    public virtual DbSet<TipuriDocumenteInterne> TipuriDocumenteInterne { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder){ }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

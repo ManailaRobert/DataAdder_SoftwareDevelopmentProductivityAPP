@@ -85,12 +85,25 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //ModifyFirme(5);
             //ModifySarcini();
             //AdaugaProbleme();
+            //ModifyDocumenteInterneDescriere();
             Console.WriteLine("Finished");
             Console.ReadKey();
 
        }
 
+        private static async void ModifyDocumenteInterneDescriere()
+        {
+            int idTipDoc = 5;
+            string descriere = "Contine pentru mai multi Angajati in maxim 4 ani: \n- productivitatea \n- factorul de respectare a termenelor de finalizare a sarcinilor.";
 
+            TipuriDocumenteInterne tip = await _context.TipuriDocumenteInterne.FirstOrDefaultAsync(tid => tid.IDTipDocument == idTipDoc);
+            tip.Descriere = descriere;
+
+            _context.TipuriDocumenteInterne.Entry(tip).State = EntityState.Modified;
+
+            //await _context.SaveChangesAsync();
+        
+        }
 
         static string RemoveDiacritics(string text)
         {
