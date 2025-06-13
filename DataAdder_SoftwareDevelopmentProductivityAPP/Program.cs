@@ -86,10 +86,87 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //ModifySarcini();
             //AdaugaProbleme();
             //ModifyDocumenteInterneDescriere();
-            Console.WriteLine("Finished");
+
+            //FixSarciniFaraPerioadeDeLucru();
+            //RemoveSarciniAndPerioadeForManagersAndArhitects();
             Console.ReadKey();
 
        }
+
+        private static async void RemoveSarciniAndPerioadeForManagersAndArhitects()
+        {
+            List<Sarcini> sarcini = await _context.Sarcini
+                .Include(s => s.Angajat)
+                .Where(s => s.Angajat.IDPost == 3 || s.Angajat.IDPost == 1)
+                .ToListAsync();
+
+            Console.WriteLine($"Sarcini: {sarcini.Count}");
+
+            List<PerioadeDeLucru> perioade = new List<PerioadeDeLucru>();
+
+            foreach(Sarcini sarc in sarcini)
+            {
+                List<PerioadeDeLucru> temp = await _context.PerioadeDeLucru
+                    .Where(s => s.IDSarcina == sarc.IDSarcina)
+                    .ToListAsync();
+
+                List<ProblemeDeRezolvare> probleme = await _context.ProblemeDeRezolvare
+                    .Where(s => s.IDSarcina == sarc.IDSarcina)
+                    .ToListAsync();
+
+
+                _context.PerioadeDeLucru.RemoveRange(temp);
+                _context.ProblemeDeRezolvare.RemoveRange(probleme);
+                _context.Sarcini.Remove(sarc);
+
+                await _context.SaveChangesAsync();
+            }
+
+
+            Console.WriteLine("Finished");
+        }
+
+        private static async void FixSarciniFaraPerioadeDeLucru()
+        {
+            //int nrProiect = 32;
+            //int idSarcina = 3944;
+
+           List<Sarcini> sarcini = await _context.Sarcini
+                //.Include(s => s.Functionalitate).ThenInclude(f => f.Proiect)
+                .Where(s => s.DataFinalizare != null && (s.PerioadeDeLucru == null || s.PerioadeDeLucru.Count == 0))
+                .ToListAsync();
+
+            //List<PerioadeDeLucru> perioadeProiect = await _context.PerioadeDeLucru
+            //    .Include( p => p.Sarcina)
+            //        .ThenInclude(s =>s.Functionalitate)
+            //        .ThenInclude(f => f.Proiect)
+            //    .Where(p => p.Sarcina.Functionalitate.NrProiect == nrProiect)
+
+            //    .ToListAsync();
+
+            //List<PerioadeDeLucru> perioadeSarcina = await _context.PerioadeDeLucru
+            //    .Include(p => p.Sarcina)
+            //        .ThenInclude(s => s.Functionalitate)
+            //        .ThenInclude(f => f.Proiect)
+            //    .Where(p => p.IDSarcina == idSarcina)
+            //    .ToListAsync();
+
+            //Console.WriteLine($"Perioade proiect nr {nrProiect}: {perioadeProiect.Count}");
+            //Console.WriteLine($"Perioade sarcina nr {idSarcina}: {perioadeSarcina.Count}");
+            Console.WriteLine($"Sarcini de modificat: {sarcini.Count}");
+            //foreach (Sarcini s in sarcini)
+            //{
+            //    //Console.WriteLine($"{s.IDSarcina}.{s.Denumire} - {s.Functionalitate.IDFunctionalitate}.{s.Functionalitate.Denumire} - {s.Functionalitate.Proiect.NrProiect}.{s.Functionalitate.Proiect.Denumire}");
+            //    List<PerioadeDeLucru> temp = newPerioadeDeLucru(s);
+
+            //    await _context.PerioadeDeLucru.AddRangeAsync(temp);
+
+            //}
+
+            //await _context.SaveChangesAsync();
+            //Console.WriteLine("Finished");
+
+        }
 
         private static async void ModifyDocumenteInterneDescriere()
         {
@@ -852,7 +929,9 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
                     Console.WriteLine($"Firma {firma.CODFirma} \n" +
                         $"Proiect {nrProiect} \n ---------------\n ");
 
-                    List<int> ListaMarcaAngajati = membriDezvoltare.Select(a => a.MarcaAngajat).ToList();
+                    List<int> ListaMarcaAngajati = membriDezvoltare
+                        .Where(md => md.IDPost != 3 || md.IDPost != 1)
+                        .Select(a => a.MarcaAngajat).ToList();
                     membriDezvoltare.Clear();
 
                     foreach (int MarcaAng in ListaMarcaAngajati)
