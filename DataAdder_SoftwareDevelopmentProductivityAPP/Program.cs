@@ -89,6 +89,7 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
 
             //FixSarciniFaraPerioadeDeLucru();
             //RemoveSarciniAndPerioadeForManagersAndArhitects();
+            //addSarcinaIntreLuni();
             Console.ReadKey();
 
        }
@@ -180,6 +181,26 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
 
             //await _context.SaveChangesAsync();
         
+        }
+
+
+        private static async void addSarcinaIntreLuni()
+        {
+            Angajati angajat = _context.Angajati.FirstOrDefault(a => a.MarcaAngajat == 5);
+            int nrSarcina = _context.Sarcini.OrderBy(s => s.IDSarcina).Select(s => s.IDSarcina).LastOrDefault();
+
+            int dataIncepere = 20240229;
+
+            nrSarcina++;
+            Sarcini sarcina = newSarcina(nrSarcina,25,5,DateActions.ConvertToDateTime(dataIncepere),"Usoara","Maxima");
+            _context.Sarcini.Add(sarcina);
+            await _context.SaveChangesAsync();
+
+            List<PerioadeDeLucru> perioade= newPerioadeDeLucru(sarcina);
+            await _context.PerioadeDeLucru.AddRangeAsync(perioade);
+            await _context.SaveChangesAsync();
+
+            Console.WriteLine("Finished");
         }
 
         static string RemoveDiacritics(string text)
@@ -1534,7 +1555,8 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
 
 
             int marcaAngajat = MarcaAngajat;
-            decimal calificativ = faker.Random.Decimal((decimal)0.5, (decimal)1.0);
+            decimal calificativ = Math.Round(faker.Random.Decimal((decimal)0.5, (decimal)1.0),1,MidpointRounding.AwayFromZero);
+
             int idGradUrgenta;
             int idGradDificultate;
             try
