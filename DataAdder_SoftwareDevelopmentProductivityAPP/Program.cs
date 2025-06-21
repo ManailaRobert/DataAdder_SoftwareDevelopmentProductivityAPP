@@ -91,15 +91,16 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //FixSarciniFaraPerioadeDeLucru();
             //RemoveSarciniAndPerioadeForManagersAndArhitects();
             //addSarcinaIntreLuni();
-            //ReplaceEmployee();
+            ReplaceEmployee();
             Console.ReadKey();
 
        }
 
         private static async void ReplaceEmployee()
         {
-            int id_MembruDezvoltare = 204;
+            int id_MembruDezvoltare = 172;// 172/204
             int idMembruCuCareInlocuiesc = 7;
+            int membruInclocuit = 68;
 
             //Membru Dezvoltare
 
@@ -116,7 +117,7 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //Sarcini
 
             foreach(Functionalitati f in membru.Proiect.Functionalitati)
-                foreach(Sarcini sarcina in f.Sarcini)
+                foreach(Sarcini sarcina in f.Sarcini.Where(s => s.MarcaAngajat == membruInclocuit))
                 {
                     sarcina.MarcaAngajat = idMembruCuCareInlocuiesc;
 
