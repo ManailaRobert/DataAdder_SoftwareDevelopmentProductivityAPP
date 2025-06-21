@@ -16,6 +16,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using System.Runtime.Intrinsics.Arm;
+using System.Linq;
 
 namespace DataAdder_SoftwareDevelopmentProductivityAPP
 {
@@ -90,9 +91,59 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //FixSarciniFaraPerioadeDeLucru();
             //RemoveSarciniAndPerioadeForManagersAndArhitects();
             //addSarcinaIntreLuni();
+            //ReplaceEmployee();
             Console.ReadKey();
 
        }
+
+        private static async void ReplaceEmployee()
+        {
+            int id_MembruDezvoltare = 204;
+            int idMembruCuCareInlocuiesc = 7;
+
+            //Membru Dezvoltare
+
+            MembriDezvoltare membru = await _context.MembriDezvoltare
+                .Include(md => md.Proiect)
+                .ThenInclude(p => p.Functionalitati)
+                .ThenInclude(f => f.Sarcini)
+                .ThenInclude(s => s.PerioadeDeLucru)
+                .FirstOrDefaultAsync(md => md.IDMembruDezvoltare == id_MembruDezvoltare);
+
+            membru.MarcaAngajat = idMembruCuCareInlocuiesc;
+
+            _context.MembriDezvoltare.Entry(membru).State = EntityState.Modified;
+            //Sarcini
+
+            foreach(Functionalitati f in membru.Proiect.Functionalitati)
+                foreach(Sarcini sarcina in f.Sarcini)
+                {
+                    sarcina.MarcaAngajat = idMembruCuCareInlocuiesc;
+
+                    _context.Sarcini.Entry(sarcina).State = EntityState.Modified;
+
+
+                    foreach (PerioadeDeLucru perioada in sarcina.PerioadeDeLucru)
+                    {
+                        perioada.MarcaAngajat = idMembruCuCareInlocuiesc;
+
+                        _context.PerioadeDeLucru.Entry(perioada).State = EntityState.Modified;
+                    }
+                }
+
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"{ex}");
+
+            }
+
+            Console.WriteLine("Finished");
+        }
 
         private static async void RemoveSarciniAndPerioadeForManagersAndArhitects()
         {

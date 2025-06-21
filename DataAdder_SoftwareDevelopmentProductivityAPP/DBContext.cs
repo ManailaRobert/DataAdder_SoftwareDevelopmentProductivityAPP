@@ -52,7 +52,6 @@ public partial class DBContext : DbContext
 
     public virtual DbSet<Sarcini> Sarcini { get; set; }
 
-    public virtual DbSet<Subtask> Subtasks { get; set; }
 
     public virtual DbSet<TipuriRapoarte> TipuriRapoarte { get; set; }
     public virtual DbSet<TipuriDocumenteInterne> TipuriDocumenteInterne { get; set; }
@@ -443,19 +442,6 @@ public partial class DBContext : DbContext
                 .HasConstraintName("FK_Sarcini_Angajati");
         });
 
-        modelBuilder.Entity<Subtask>(entity =>
-        {
-            entity.HasKey(e => e.IDSubtask);
-
-            entity.Property(e => e.IDSubtask).HasColumnName("ID_Subtask");
-            entity.Property(e => e.Denumire).HasMaxLength(20);
-            entity.Property(e => e.IDSarcina).HasColumnName("ID_Sarcina");
-
-            entity.HasOne(d => d.Sarcina).WithMany(p => p.Subtasks)
-                .HasForeignKey(d => d.IDSarcina)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Subtasks_Sarcini");
-        });
 
         modelBuilder.Entity<TipuriRapoarte>(entity =>
         {
