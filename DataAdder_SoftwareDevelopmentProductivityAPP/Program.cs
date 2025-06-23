@@ -91,10 +91,99 @@ namespace DataAdder_SoftwareDevelopmentProductivityAPP
             //FixSarciniFaraPerioadeDeLucru();
             //RemoveSarciniAndPerioadeForManagersAndArhitects();
             //addSarcinaIntreLuni();
-            ReplaceEmployee();
+            //ReplaceEmployee();
+
+            //addTaskToAlreadyFinishedProject(7,20230601,1);
             Console.ReadKey();
 
        }
+
+        private static async void addTaskToAlreadyFinishedProject(int marcaAngajat,int dataCreareSarcina,int zileAdaugate_PanaLaFinalizare)
+        {
+            Faker faker = new Faker();
+            MembriDezvoltare membru = await _context.MembriDezvoltare
+                .Include(md => md.Angajat)
+                    .ThenInclude(a => a.Post)
+                .Include(md => md.Proiect)
+                .FirstOrDefaultAsync(md => md.MarcaAngajat == marcaAngajat
+                && dataCreareSarcina >= md.DataIntrare && dataCreareSarcina <= md.DataIesire);
+
+            if(membru == null)
+            {
+                Console.WriteLine("Angajatul nu face parte din nici un proiect in perioada de creare a sarcinii.");
+                return;
+            }
+
+            Angajati angajat = membru.Angajat;
+            if(angajat.Post.Denumire.Equals("Manager Proiect") || angajat.Post.Denumire.Equals("Arhitect Software"))
+            {
+                Console.WriteLine("Angajatul nu poate avea sarcini. (Este manager sau arhitect)");
+                return;
+            }
+
+            List<int> funcList = await _context.Functionalitati
+                .Where(f => f.NrProiect == membru.NrProiect)
+                .Select(f => f.IDFunctionalitate)
+                .ToListAsync();
+
+            Proiecte proiect = membru.Proiect;
+            int idFunct = faker.PickRandom(funcList);
+            int nrSarcina = _context.Sarcini.Count() +1;
+            DateTime dataCreareSrc = DateTime.Now;
+
+            try
+            {
+                dataCreareSrc = DateActions.ConvertToDateTime(dataCreareSarcina);
+
+            }
+            catch
+            {
+                Console.WriteLine("Data nu poate fi creata deoarece nu exista.");
+                return;
+            }
+
+            DateTime dataFinalizareSrc = dataCreareSrc.AddDays(zileAdaugate_PanaLaFinalizare);
+            Sarcini sarcina = newSarcina(nrSarcina,idFunct,marcaAngajat,dataCreareSrc);
+
+
+            sarcina.DataFinalizare = DateActions.ConvertToIntFormat(dataFinalizareSrc);
+
+            if(sarcina.DataFinalizare > proiect.DataFinalizare )
+            {
+                Console.WriteLine("Data de finalizare a sarcinii este mai mare decat data de finalizare a proiectului");
+                return;
+            }
+
+
+            _context.Sarcini.Add(sarcina);
+
+            try
+            {
+               await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return;
+            }
+
+
+            List<PerioadeDeLucru> perioade = newPerioadeDeLucru(sarcina);
+
+            _context.PerioadeDeLucru.AddRange(perioade);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return;
+            }
+
+            Console.WriteLine("Finished");
+        }
 
         private static async void ReplaceEmployee()
         {
